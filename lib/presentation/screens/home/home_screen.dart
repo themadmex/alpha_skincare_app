@@ -2,186 +2,94 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:fl_chart/fl_chart.dart';
-import '../../providers/scan_provider.dart';
+import '../../widgets/home/greeting_card.dart';
+import '../../widgets/home/quick_actions.dart';
+import '../../widgets/home/skin_progress_card.dart';
+import '../../widgets/home/recent_scans.dart';
+import '../../widgets/home/daily_tips.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/common/custom_button.dart';
+import '../../providers/scan_provider.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final scanHistory = ref.watch(scanHistoryProvider);
-    final authState = ref.watch(authStateProvider);
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load recent scans
+    Future.microtask(() => ref.read(scanControllerProvider.notifier).loadRecentScans());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = ref.watch(authControllerProvider);
+    final scanState = ref.watch(scanControllerProvider);
 
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text('SkinSense'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => context.go('/settings'),
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () {
+              // TODO: Navigate to notifications
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => context.go('/profile'),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    authState.when(
-                      data: (user) => Text(
-                        'Welcome back, ${user?.displayName ?? 'User'}!',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                      loading: () => const Text('Loading...'),
-                      error: (_, __) => const Text('Welcome!'),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Ready for your next skin analysis?',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                    const SizedBox(height: 16),
-                    CustomButton(
-                      text: 'Start New Scan',
-                      onPressed: () => context.go('/scan'),
-                      icon: Icons.camera_alt,
-                    ),
-                  ],
-                ),
-              ),
-            ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(scanControllerProvider.notifier).loadRecentScans();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Greeting card
+              const GreetingCard(),
+              const SizedBox(height: 16),
 
-            const SizedBox(height: 24),
+              // Quick actions
+              const QuickActions(),
+              const SizedBox(height: 16),
 
-            // Progress Chart
-            Text(
-              'Your Progress',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
+              // Skin progress card
+              const SkinProgressCard(),
+              const SizedBox(height: 16),
 
-            scanHistory.when(
-              data: (scans) {
-                if (scans.isEmpty) {
-                  return const Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(40),
-                      child: Center(
-                        child: Text(
-                          'No scans yet.\nTake your first scan to see progress!',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ),
-                    ),
-                  );
-                }
+              // Recent scans
+              const RecentScans(),
+              const SizedBox(height: 16),
 
-                return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: SizedBox(
-                      height: 200,
-                      child: LineChart(
-                        LineChartData(
-                          gridData: const FlGridData(show: false),
-                          titlesData: const FlTitlesData(show: false),
-                          borderData: FlBorderData(show: false),
-                          lineBarsData: [
-                            LineChartBarData(
-                              spots: scans.asMap().entries.map((entry) {
-                                return FlSpot(
-                                  entry.key.toDouble(),
-                                  entry.value.overallScore.toDouble(),
-                                );
-                              }).toList(),
-                              isCurved: true,
-                              color: Theme.of(context).primaryColor,
-                              barWidth: 3,
-                              dotData: const FlDotData(show: false),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-              loading: () => const Card(
-                child: Padding(
-                  padding: EdgeInsets.all(40),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              ),
-              error: (_, __) => const Card(
-                child: Padding(
-                  padding: EdgeInsets.all(40),
-                  child: Center(child: Text('Error loading progress')),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Quick Actions
-            Text(
-              'Quick Actions',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Expanded(
-                  child: Card(
-                    child: InkWell(
-                      onTap: () => context.go('/recommendations'),
-                      child: const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            Icon(Icons.lightbulb, size: 32),
-                            SizedBox(height: 8),
-                            Text('Tips'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Card(
-                    child: InkWell(
-                      onTap: () => context.go('/profile/history'),
-                      child: const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            Icon(Icons.history, size: 32),
-                            SizedBox(height: 8),
-                            Text('History'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+              // Daily tips
+              const DailyTips(),
+              const SizedBox(height: 80), // Bottom padding for FAB
+            ],
+          ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.go('/scan'),
+        icon: const Icon(Icons.camera_alt),
+        label: const Text('Scan Skin'),
+        backgroundColor: Theme.of(context).primaryColor,
       ),
     );
   }
 }
+
+
