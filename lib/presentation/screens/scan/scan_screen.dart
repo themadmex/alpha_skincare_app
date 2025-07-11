@@ -1,210 +1,153 @@
-// lib/presentation/screens/scan/scan_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:camera/camera.dart';
 import 'package:go_router/go_router.dart';
-import '../../providers/scan_provider.dart';
-import '../../widgets/scan/camera_overlay.dart';
-import '../../widgets/scan/scan_instructions.dart';
-import '../../widgets/common/custom_button.dart';
 
-class ScanScreen extends ConsumerStatefulWidget {
+class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
 
   @override
-  ConsumerState<ScanScreen> createState() => _ScanScreenState();
+  State<ScanScreen> createState() => _ScanScreenState();
 }
 
-class _ScanScreenState extends ConsumerState<ScanScreen> {
-  CameraController? _cameraController;
-  List<CameraDescription>? _cameras;
-  bool _isInitialized = false;
-  bool _showInstructions = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeCamera();
-  }
-
-  @override
-  void dispose() {
-    _cameraController?.dispose();
-    super.dispose();
-  }
-
-  Future<void> _initializeCamera() async {
-    try {
-      _cameras = await availableCameras();
-      if (_cameras!.isNotEmpty) {
-        _cameraController = CameraController(
-          _cameras![0],
-          ResolutionPreset.high,
-        );
-        await _cameraController!.initialize();
-        if (mounted) {
-          setState(() {
-            _isInitialized = true;
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint('Error initializing camera: $e');
-    }
-  }
-
-  Future<void> _takePicture() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      return;
-    }
-
-    try {
-      final image = await _cameraController!.takePicture();
-      await ref.read(scanControllerProvider.notifier).analyzeSkin(image.path);
-      context.go('/scan/results');
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error taking picture: $e')),
-      );
-    }
-  }
-
+class _ScanScreenState extends State<ScanScreen> {
   @override
   Widget build(BuildContext context) {
-    final scanState = ref.watch(scanControllerProvider);
-
-    if (_showInstructions) {
-      return ScanInstructions(
-        onContinue: () {
-          setState(() {
-            _showInstructions = false;
-          });
-        },
-      );
-    }
-
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          'Scan Your Skin',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Skin Scan'),
       ),
-      body: Stack(
-        children: [
-          // Camera preview
-          if (_isInitialized && _cameraController != null)
-            Positioned.fill(
-              child: CameraPreview(_cameraController!),
-            )
-          else
-            const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
-
-          // Camera overlay
-          if (_isInitialized)
-            const Positioned.fill(
-              child: CameraOverlay(),
-            ),
-
-          // Bottom controls
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.8),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            // Instructions
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Scan Instructions',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      '• Ensure good lighting\n'
+                          '• Keep the camera steady\n'
+                          '• Focus on the area of concern\n'
+                          '• Avoid shadows and reflections',
+                      style: TextStyle(height: 1.5),
+                    ),
                   ],
                 ),
               ),
+            ),
+
+            const Spacer(),
+
+            // Camera preview placeholder
+            Container(
+              width: double.infinity,
+              height: 300,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Position your face in the circle',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
+                  Icon(
+                    Icons.camera_alt,
+                    size: 64,
+                    color: Colors.grey[400],
                   ),
-                  const SizedBox(height: 24),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      // Gallery button
-                      IconButton(
-                        onPressed: () {
-                          // TODO: Implement gallery picker
-                        },
-                        icon: const Icon(
-                          Icons.photo_library,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                      ),
-
-                      // Capture button
-                      GestureDetector(
-                        onTap: scanState.isLoading ? null : _takePicture,
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: scanState.isLoading
-                                ? Colors.grey
-                                : Colors.white,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white,
-                              width: 4,
-                            ),
-                          ),
-                          child: scanState.isLoading
-                              ? const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.blue,
-                            ),
-                          )
-                              : const Icon(
-                            Icons.camera_alt,
-                            color: Colors.black,
-                            size: 32,
-                          ),
-                        ),
-                      ),
-
-                      // Switch camera button
-                      IconButton(
-                        onPressed: () {
-                          // TODO: Implement camera switch
-                        },
-                        icon: const Icon(
-                          Icons.flip_camera_ios,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 16),
+                  Text(
+                    'Camera Preview',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Camera integration coming soon',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey[500],
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+
+            const Spacer(),
+
+            // Action buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      // TODO: Implement gallery selection
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Gallery selection coming soon!')),
+                      );
+                    },
+                    icon: const Icon(Icons.photo_library),
+                    label: const Text('Gallery'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      // TODO: Implement camera capture
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Camera capture coming soon!')),
+                      );
+                    },
+                    icon: const Icon(Icons.camera_alt),
+                    label: const Text('Take Photo'),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Mock analysis button for testing
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () {
+                  // Mock navigation to results
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Mock Analysis'),
+                      content: const Text('This would normally show scan results. Camera integration and AI analysis are coming soon!'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: const Text('Show Mock Results (Testing Only)'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

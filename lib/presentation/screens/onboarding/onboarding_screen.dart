@@ -1,62 +1,34 @@
-// lib/presentation/screens/onboarding/onboarding_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
-import '../../widgets/common/custom_button.dart';
 
-class OnboardingScreen extends ConsumerStatefulWidget {
+class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
   final List<OnboardingPage> _pages = [
     OnboardingPage(
-      title: 'Analyze Your Skin',
-      description: 'Use AI-powered analysis to understand your skin type, concerns, and get personalized recommendations.',
-      animation: 'assets/animations/skin_analysis.json',
-      color: const Color(0xFF6C5CE7),
+      icon: Icons.camera_alt,
+      title: 'Scan Your Skin',
+      description: 'Use your camera to capture skin conditions and get instant AI-powered analysis.',
     ),
     OnboardingPage(
-      title: 'Personalized Skincare',
-      description: 'Get customized product recommendations based on your skin analysis and preferences.',
-      animation: 'assets/animations/personalized_care.json',
-      color: const Color(0xFF00B894),
+      icon: Icons.analytics,
+      title: 'Track Progress',
+      description: 'Monitor your skin health journey with detailed insights and progress tracking.',
     ),
     OnboardingPage(
-      title: 'Track Your Progress',
-      description: 'Monitor your skin health journey with regular scans and progress tracking.',
-      animation: 'assets/animations/progress_tracking.json',
-      color: const Color(0xFF00CEC9),
+      icon: Icons.recommend,
+      title: 'Get Recommendations',
+      description: 'Receive personalized skincare product recommendations based on your skin analysis.',
     ),
   ];
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  void _nextPage() {
-    if (_currentPage < _pages.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      context.go('/profile-setup');
-    }
-  }
-
-  void _skip() {
-    context.go('/profile-setup');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,60 +37,66 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: Column(
           children: [
             // Skip button
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Align(
-                alignment: Alignment.centerRight,
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
                 child: TextButton(
-                  onPressed: _skip,
+                  onPressed: () => context.go('/auth/login'),
                   child: const Text('Skip'),
                 ),
               ),
             ),
 
-            // Page view
+            // Page content
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
+                itemCount: _pages.length,
                 onPageChanged: (index) {
                   setState(() {
                     _currentPage = index;
                   });
                 },
-                itemCount: _pages.length,
                 itemBuilder: (context, index) {
-                  final page = _pages[index];
                   return Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Animation
-                        Lottie.asset(
-                          page.animation,
-                          height: 250,
-                          width: 250,
+                        // Icon
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(60),
+                          ),
+                          child: Icon(
+                            _pages[index].icon,
+                            size: 60,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                         ),
-                        const SizedBox(height: 48),
+
+                        const SizedBox(height: 40),
 
                         // Title
                         Text(
-                          page.title,
+                          _pages[index].title,
                           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: page.color,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 16),
+
+                        const SizedBox(height: 20),
 
                         // Description
                         Text(
-                          page.description,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
-                            height: 1.5,
+                          _pages[index].description,
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Colors.grey[600],
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -129,37 +107,67 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
             ),
 
-            // Bottom section
+            // Page indicators
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                _pages.length,
+                    (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: _currentPage == index ? 24 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _currentPage == index
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 40),
+
+            // Bottom buttons
             Padding(
               padding: const EdgeInsets.all(24),
-              child: Column(
+              child: Row(
                 children: [
-                  // Page indicator
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _pages.length,
-                          (index) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: _currentPage == index ? 24 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: _currentPage == index
-                              ? _pages[_currentPage].color
-                              : Colors.grey.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+                  // Previous button
+                  if (_currentPage > 0)
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          _pageController.previousPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.ease,
+                          );
+                        },
+                        child: const Text('Previous'),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 32),
 
-                  // Continue button
-                  CustomButton(
-                    text: _currentPage == _pages.length - 1 ? 'Get Started' : 'Continue',
-                    onPressed: _nextPage,
-                    backgroundColor: _pages[_currentPage].color,
+                  if (_currentPage > 0) const SizedBox(width: 16),
+
+                  // Next/Get Started button
+                  Expanded(
+                    flex: _currentPage > 0 ? 1 : 2,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_currentPage < _pages.length - 1) {
+                          _pageController.nextPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.ease,
+                          );
+                        } else {
+                          context.go('/auth/login');
+                        }
+                      },
+                      child: Text(
+                        _currentPage < _pages.length - 1 ? 'Next' : 'Get Started',
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -169,18 +177,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 }
 
 class OnboardingPage {
+  final IconData icon;
   final String title;
   final String description;
-  final String animation;
-  final Color color;
 
   OnboardingPage({
+    required this.icon,
     required this.title,
     required this.description,
-    required this.animation,
-    required this.color,
   });
 }

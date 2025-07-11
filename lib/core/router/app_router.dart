@@ -34,7 +34,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         AppConstants.routeLogin,
         AppConstants.routeSignup,
         AppConstants.routeForgotPassword,
-      ].contains(state.location);
+      ].contains(state.uri.toString());
 
       // If not authenticated and not on auth pages, redirect to login
       if (!isAuthenticated && !isOnAuthPages) {

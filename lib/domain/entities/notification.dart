@@ -19,7 +19,7 @@ class AppNotification {
     this.data,
     required this.createdAt,
     this.readAt,
-    required this.isRead,
+    required this.isRead, required String body,
   });
 
   AppNotification copyWith({
@@ -42,7 +42,7 @@ class AppNotification {
       data: data ?? this.data,
       createdAt: createdAt ?? this.createdAt,
       readAt: readAt ?? this.readAt,
-      isRead: isRead ?? this.isRead,
+      isRead: isRead ?? this.isRead, body: '',
     );
   }
 }

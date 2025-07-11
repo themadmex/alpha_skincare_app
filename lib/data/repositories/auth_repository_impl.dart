@@ -1,7 +1,5 @@
 // lib/data/repositories/auth_repository_impl.dart
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
-
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -10,81 +8,65 @@ class AuthRepositoryImpl implements AuthRepository {
   User? _currentUser;
 
   @override
-  Stream<User?> get authStateChanges => _authStateController.stream;
-
-  @override
   Future<User> signUp(String email, String password, String name) async {
-    // Mock implementation - replace with actual authentication logic
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 2));
 
-    if (email.isEmpty || password.isEmpty || name.isEmpty) {
-      throw Exception('All fields are required');
+    if (email.isEmpty || password.length < 6) {
+      throw Exception('Invalid email or password too short');
     }
 
-    if (password.length < 6) {
-      throw Exception('Password must be at least 6 characters');
-    }
-
-    final user = User(
-      id: 'user_${DateTime.now().millisecondsSinceEpoch}',
+    _currentUser = User(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
       email: email,
       name: name,
       createdAt: DateTime.now(),
       isActive: true,
     );
 
-    _currentUser = user;
-    _authStateController.add(user);
-
-    return user;
+    _authStateController.add(_currentUser);
+    return _currentUser!;
   }
 
   @override
   Future<User> signIn(String email, String password) async {
-    // Mock implementation - replace with actual authentication logic
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 2));
 
-    if (email.isEmpty || password.isEmpty) {
-      throw Exception('Email and password are required');
-    }
-
-    // Mock validation
-    if (email == 'test@example.com' && password == 'password123') {
-      final user = User(
-        id: 'user_mock_id',
+    // Mock credentials check
+    if (email == 'demo@skinsense.com' && password == 'password123') {
+      _currentUser = User(
+        id: '1',
         email: email,
-        name: 'Test User',
+        name: 'Demo User',
         createdAt: DateTime.now().subtract(const Duration(days: 30)),
-        emailVerifiedAt: DateTime.now().subtract(const Duration(days: 29)),
         isActive: true,
       );
-
-      _currentUser = user;
-      _authStateController.add(user);
-
-      return user;
-    } else {
-      throw Exception('Invalid email or password');
+      _authStateController.add(_currentUser);
+      return _currentUser!;
     }
+
+    throw Exception('Invalid credentials');
   }
 
   @override
   Future<void> signOut() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(seconds: 1));
     _currentUser = null;
     _authStateController.add(null);
   }
 
   @override
   Future<void> sendPasswordResetEmail(String email) async {
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 2));
 
     if (email.isEmpty) {
       throw Exception('Email is required');
     }
 
+    if (!email.contains('@')) {
+      throw Exception('Invalid email address');
+    }
+
     // Mock implementation - in real app, this would send an email
-    // For now, we'll just simulate success
   }
 
   @override
@@ -94,7 +76,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> updateProfile(User user) async {
+  Future<void> updateProfile(User user) async {  // Explicitly typed as User
     await Future.delayed(const Duration(milliseconds: 500));
     _currentUser = user;
     _authStateController.add(user);
@@ -105,5 +87,15 @@ class AuthRepositoryImpl implements AuthRepository {
     await Future.delayed(const Duration(seconds: 1));
     _currentUser = null;
     _authStateController.add(null);
+  }
+
+  @override
+  Stream<User?> get authStateChanges {
+    return _authStateController.stream;
+  }
+
+  // Clean up resources
+  void dispose() {
+    _authStateController.close();
   }
 }

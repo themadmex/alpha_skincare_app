@@ -9,7 +9,7 @@ class RecommendationsRepositoryImpl implements RecommendationsRepository {
   // Expanded mock data with more realistic products
   final List<ProductRecommendation> _mockRecommendations = [
     // Cleansers
-    ProductRecommendation(
+    const ProductRecommendation(
       id: 'cleanser_1',
       name: 'Foaming Facial Cleanser',
       brand: 'CeraVe',
@@ -24,7 +24,7 @@ class RecommendationsRepositoryImpl implements RecommendationsRepository {
       matchPercentage: 95,
       purchaseUrl: 'https://example.com/cerave-cleanser',
     ),
-    ProductRecommendation(
+    const ProductRecommendation(
       id: 'cleanser_2',
       name: 'Hydrating Cream Cleanser',
       brand: 'Neutrogena',
@@ -39,7 +39,7 @@ class RecommendationsRepositoryImpl implements RecommendationsRepository {
       matchPercentage: 88,
       purchaseUrl: 'https://example.com/neutrogena-cleanser',
     ),
-    ProductRecommendation(
+    const ProductRecommendation(
       id: 'cleanser_3',
       name: 'Gentle Gel Cleanser',
       brand: 'La Roche-Posay',

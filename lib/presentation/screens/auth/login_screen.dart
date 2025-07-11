@@ -1,11 +1,7 @@
-// lib/presentation/screens/auth/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/common/custom_button.dart';
-import '../../widgets/common/custom_text_field.dart';
-import '../../../core/utils/validators.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +14,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -26,25 +23,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _signIn() async {
+  Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      try {
-        await ref.read(authControllerProvider.notifier).signIn(
-          _emailController.text.trim(),
-          _passwordController.text,
-        );
-        context.go('/home');
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+      await ref.read(authNotifierProvider.notifier).login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
+      final authState = ref.read(authStateProvider);
+      if (authState.isAuthenticated) {
+        if (mounted) {
+          context.go('/home');
+        }
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
+    final authState = ref.watch(authStateProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -55,79 +52,155 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 60),
+                const SizedBox(height: 40),
 
                 // Logo and title
-                Center(
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(
-                          Icons.face,
-                          size: 40,
-                          color: Colors.white,
-                        ),
+                Column(
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Welcome back!',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: const Icon(
+                        Icons.health_and_safety,
+                        size: 40,
+                        color: Colors.white,
                       ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Sign in to continue your skincare journey',
-                        style: TextStyle(color: Colors.grey),
-                        textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Welcome Back',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Sign in to continue your skin health journey',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
 
-                const SizedBox(height: 48),
+                const SizedBox(height: 40),
 
                 // Email field
-                CustomTextField(
+                TextFormField(
                   controller: _emailController,
-                  label: 'Email',
                   keyboardType: TextInputType.emailAddress,
-                  validator: Validators.email,
-                  prefixIcon: Icons.email_outlined,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    hintText: 'Enter your email address',
+                    prefixIcon: Icon(Icons.email_outlined),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    if (!value.contains('@')) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
                 ),
+
                 const SizedBox(height: 16),
 
                 // Password field
-                CustomTextField(
+                TextFormField(
                   controller: _passwordController,
-                  label: 'Password',
-                  obscureText: true,
-                  validator: (value) => Validators.required(value, 'Password'),
-                  prefixIcon: Icons.lock_outline,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    hintText: 'Enter your password',
+                    prefixIcon: const Icon(Icons.lock_outlined),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    if (value.length < 6) {
+                      return 'Password must be at least 6 characters';
+                    }
+                    return null;
+                  },
                 ),
-                const SizedBox(height: 24),
 
-                // Sign in button
-                CustomButton(
-                  text: 'Sign In',
-                  onPressed: authState.isLoading ? null : _signIn,
-                  isLoading: authState.isLoading,
-                ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
                 // Forgot password
-                TextButton(
-                  onPressed: () => context.go('/auth/forgot-password'),
-                  child: const Text('Forgot Password?'),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => context.go('/auth/forgot-password'),
+                    child: const Text('Forgot Password?'),
+                  ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+
+                // Error message
+                if (authState.error != null)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      authState.error!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+
+                // Login button
+                ElevatedButton(
+                  onPressed: authState.isLoading ? null : _handleLogin,
+                  child: authState.isLoading
+                      ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                      : const Text('Sign In'),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Divider
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'or',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
 
                 // Sign up link
                 Row(
@@ -139,42 +212,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: const Text('Sign Up'),
                     ),
                   ],
-                ),
-
-                const SizedBox(height: 32),
-
-                // Demo credentials (for testing)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Demo Credentials',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Email: test@example.com\nPassword: password123',
-                        style: TextStyle(fontSize: 12),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () {
-                          _emailController.text = 'test@example.com';
-                          _passwordController.text = 'password123';
-                        },
-                        child: const Text('Fill Demo Data'),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),

@@ -10,6 +10,7 @@ import '../features/results/screens/results_screen.dart';
 import '../features/recommend/screens/recommendations_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/booking/screens/booking_screen.dart';
+import '../features/scan/screens/scan_screens.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/splash',

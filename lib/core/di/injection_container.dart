@@ -1,121 +1,253 @@
 // lib/core/di/injection_container.dart
-import 'package:get_it/get_it.dart';
-import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import '../../data/datasources/remote/auth_remote_datasource.dart';
-import '../../data/datasources/remote/profile_remote_datasource.dart';
-import '../../data/datasources/remote/scan_remote_datasource.dart';
-import '../../data/datasources/remote/recommendations_remote_datasource.dart';
-import '../../data/datasources/local/auth_local_datasource.dart';
-import '../../data/datasources/local/profile_local_datasource.dart';
-import '../../data/datasources/local/scan_local_datasource.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// Repository implementations (simplified for now)
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../data/repositories/scan_repository_impl.dart';
 import '../../data/repositories/recommendations_repository_impl.dart';
+
+// Domain repositories
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/profile_repository.dart';
+import '../../domain/repositories/recommendation_repository.dart';
 import '../../domain/repositories/scan_repository.dart';
 import '../../domain/repositories/recommendations_repository.dart';
-import '../../domain/usecases/auth/login_usecase.dart';
-import '../../domain/usecases/auth/signup_usecase.dart';
-import '../../domain/usecases/auth/logout_usecase.dart';
-import '../../domain/usecases/auth/forgot_password_usecase.dart';
-import '../../domain/usecases/profile/get_profile_usecase.dart';
-import '../../domain/usecases/profile/update_profile_usecase.dart';
-import '../../domain/usecases/scan/analyze_skin_usecase.dart';
-import '../../domain/usecases/scan/get_scan_history_usecase.dart';
-import '../../domain/usecases/recommendations/get_recommendations_usecase.dart';
-import '../config/app_config.dart';
-import '../network/network_info.dart';
-import '../network/dio_client.dart';
 
-final sl = GetIt.instance;
+// Repository Providers using Riverpod
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  return AuthRepositoryImpl();
+});
 
-Future<void> init() async {
-  // External dependencies
-  final sharedPreferences = await SharedPreferences.getInstance();
-  sl.registerLazySingleton(() => sharedPreferences);
+final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
+  return ProfileRepositoryImpl();
+});
 
-  sl.registerLazySingleton(() => const FlutterSecureStorage());
-  sl.registerLazySingleton(() => Connectivity());
+final scanRepositoryProvider = Provider<ScanRepository>((ref) {
+  return ScanRepositoryImpl();
+});
 
-  // Network
-  sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
-  sl.registerLazySingleton<DioClient>(() => DioClient());
-  sl.registerLazySingleton<Dio>(() => sl<DioClient>().dio);
+final recommendationsRepositoryProvider = Provider<RecommendationsRepository>((ref) {
+  return RecommendationsRepositoryImpl();
+});
 
-  // Data sources
-  sl.registerLazySingleton<AuthRemoteDataSource>(
-        () => AuthRemoteDataSourceImpl(sl()),
-  );
-  sl.registerLazySingleton<AuthLocalDataSource>(
-        () => AuthLocalDataSourceImpl(sl(), sl()),
-  );
+// Use case providers
+final loginUsecaseProvider = Provider<LoginUsecase>((ref) {
+  return LoginUsecase(ref.watch(authRepositoryProvider));
+});
 
-  sl.registerLazySingleton<ProfileRemoteDataSource>(
-        () => ProfileRemoteDataSourceImpl(sl()),
-  );
-  sl.registerLazySingleton<ProfileLocalDataSource>(
-        () => ProfileLocalDataSourceImpl(sl()),
-  );
+final signupUsecaseProvider = Provider<SignupUsecase>((ref) {
+  return SignupUsecase(ref.watch(authRepositoryProvider));
+});
 
-  sl.registerLazySingleton<ScanRemoteDataSource>(
-        () => ScanRemoteDataSourceImpl(sl()),
-  );
-  sl.registerLazySingleton<ScanLocalDataSource>(
-        () => ScanLocalDataSourceImpl(sl()),
-  );
+final logoutUsecaseProvider = Provider<LogoutUsecase>((ref) {
+  return LogoutUsecase(ref.watch(authRepositoryProvider));
+});
 
-  sl.registerLazySingleton<RecommendationsRemoteDataSource>(
-        () => RecommendationsRemoteDataSourceImpl(sl()),
-  );
+final forgotPasswordUsecaseProvider = Provider<ForgotPasswordUsecase>((ref) {
+  return ForgotPasswordUsecase(ref.watch(authRepositoryProvider));
+});
 
-  // Repositories
-  sl.registerLazySingleton<AuthRepository>(
-        () => AuthRepositoryImpl(
-      remoteDataSource: sl(),
-      localDataSource: sl(),
-      networkInfo: sl(),
-    ),
-  );
+final getProfileUsecaseProvider = Provider<GetProfileUsecase>((ref) {
+  return GetProfileUsecase(ref.watch(profileRepositoryProvider));
+});
 
-  sl.registerLazySingleton<ProfileRepository>(
-        () => ProfileRepositoryImpl(
-      remoteDataSource: sl(),
-      localDataSource: sl(),
-      networkInfo: sl(),
-    ),
-  );
+final updateProfileUsecaseProvider = Provider<UpdateProfileUsecase>((ref) {
+  return UpdateProfileUsecase(ref.watch(profileRepositoryProvider));
+});
 
-  sl.registerLazySingleton<ScanRepository>(
-        () => ScanRepositoryImpl(
-      remoteDataSource: sl(),
-      localDataSource: sl(),
-      networkInfo: sl(),
-    ),
-  );
+final analyzeSkinUsecaseProvider = Provider<AnalyzeSkinUsecase>((ref) {
+  return AnalyzeSkinUsecase(ref.watch(scanRepositoryProvider));
+});
 
-  sl.registerLazySingleton<RecommendationsRepository>(
-        () => RecommendationsRepositoryImpl(
-      remoteDataSource: sl(),
-      networkInfo: sl(),
-    ),
-  );
+final getScanHistoryUsecaseProvider = Provider<GetScanHistoryUsecase>((ref) {
+  return GetScanHistoryUsecase(ref.watch(scanRepositoryProvider));
+});
 
-  // Use cases
-  sl.registerLazySingleton(() => LoginUsecase(sl()));
-  sl.registerLazySingleton(() => SignupUsecase(sl()));
-  sl.registerLazySingleton(() => LogoutUsecase(sl()));
-  sl.registerLazySingleton(() => ForgotPasswordUsecase(sl()));
+final getRecommendationsUsecaseProvider = Provider<GetRecommendationsUsecase>((ref) {
+  return GetRecommendationsUsecase(ref.watch(recommendationsRepositoryProvider));
+});
 
-  sl.registerLazySingleton(() => GetProfileUsecase(sl()));
-  sl.registerLazySingleton(() => UpdateProfileUsecase(sl()));
+// Simple use case implementations
 
-  sl.registerLazySingleton(() => AnalyzeSkinUsecase(sl()));
-  sl.registerLazySingleton(() => GetScanHistoryUsecase(sl()));
+// lib/domain/usecases/auth/login_usecase.dart
+class LoginUsecase {
+  final AuthRepository _repository;
 
-  sl.registerLazySingleton(() => GetRecommendationsUsecase(sl()));
+  LoginUsecase(this._repository);
+
+  Future<void> call(String email, String password) async {
+    await _repository.signIn(email, password);
+  }
+}
+
+// lib/domain/usecases/auth/signup_usecase.dart
+class SignupUsecase {
+  final AuthRepository _repository;
+
+  SignupUsecase(this._repository);
+
+  Future<void> call(String email, String password, String name) async {
+    await _repository.signUp(email, password, name);
+  }
+}
+
+// lib/domain/usecases/auth/logout_usecase.dart
+class LogoutUsecase {
+  final AuthRepository _repository;
+
+  LogoutUsecase(this._repository);
+
+  Future<void> call() async {
+    await _repository.signOut();
+  }
+}
+
+// lib/domain/usecases/auth/forgot_password_usecase.dart
+class ForgotPasswordUsecase {
+  final AuthRepository _repository;
+
+  ForgotPasswordUsecase(this._repository);
+
+  Future<void> call(String email) async {
+    await _repository.sendPasswordResetEmail(email);
+  }
+}
+
+// lib/domain/usecases/profile/get_profile_usecase.dart
+class GetProfileUsecase {
+  final ProfileRepository _repository;
+
+  GetProfileUsecase(this._repository);
+
+  Future<dynamic> call(String userId) async {
+    return await _repository.getProfile(userId);
+  }
+}
+
+// lib/domain/usecases/profile/update_profile_usecase.dart
+class UpdateProfileUsecase {
+  final ProfileRepository _repository;
+
+  UpdateProfileUsecase(this._repository);
+
+  Future<dynamic> call(dynamic profile) async {
+    return await _repository.updateProfile(profile);
+  }
+}
+
+// lib/domain/usecases/scan/analyze_skin_usecase.dart
+class AnalyzeSkinUsecase {
+  final ScanRepository _repository;
+
+  AnalyzeSkinUsecase(this._repository);
+
+  Future<dynamic> call(String imagePath) async {
+    return await _repository.analyzeSkin(imagePath);
+  }
+}
+
+// lib/domain/usecases/scan/get_scan_history_usecase.dart
+class GetScanHistoryUsecase {
+  final ScanRepository _repository;
+
+  GetScanHistoryUsecase(this._repository);
+
+  Future<List<dynamic>> call(String userId) async {
+    return await _repository.getScanHistory(userId);
+  }
+}
+
+// lib/domain/usecases/recommendations/get_recommendations_usecase.dart
+class GetRecommendationsUsecase {
+  final RecommendationsRepository _repository;
+
+  GetRecommendationsUsecase(this._repository);
+
+  Future<List<dynamic>> call(String userId) async {
+    return await _repository.getRecommendations(userId);
+  }
+}
+
+// Simple network info implementation (no external dependencies)
+class NetworkInfo {
+  Future<bool> get isConnected async {
+    // Simple implementation - in real app you'd check actual connectivity
+    return true;
+  }
+}
+
+final networkInfoProvider = Provider<NetworkInfo>((ref) {
+  return NetworkInfo();
+});
+
+// Simple HTTP client wrapper (no external dependencies)
+class SimpleHttpClient {
+  Future<Map<String, dynamic>> get(String url) async {
+    // Mock implementation - replace with actual HTTP calls when needed
+    await Future.delayed(const Duration(milliseconds: 500));
+    return {'success': true, 'data': []};
+  }
+
+  Future<Map<String, dynamic>> post(String url, Map<String, dynamic> data) async {
+    // Mock implementation - replace with actual HTTP calls when needed
+    await Future.delayed(const Duration(milliseconds: 800));
+    return {'success': true, 'data': data};
+  }
+
+  Future<Map<String, dynamic>> put(String url, Map<String, dynamic> data) async {
+    // Mock implementation - replace with actual HTTP calls when needed
+    await Future.delayed(const Duration(milliseconds: 600));
+    return {'success': true, 'data': data};
+  }
+
+  Future<Map<String, dynamic>> delete(String url) async {
+    // Mock implementation - replace with actual HTTP calls when needed
+    await Future.delayed(const Duration(milliseconds: 400));
+    return {'success': true};
+  }
+}
+
+final httpClientProvider = Provider<SimpleHttpClient>((ref) {
+  return SimpleHttpClient();
+});
+
+// Simple storage implementation (no external dependencies)
+class SimpleStorage {
+  final Map<String, dynamic> _storage = {};
+
+  Future<void> setString(String key, String value) async {
+    _storage[key] = value;
+  }
+
+  Future<String?> getString(String key) async {
+    return _storage[key] as String?;
+  }
+
+  Future<void> setBool(String key, bool value) async {
+    _storage[key] = value;
+  }
+
+  Future<bool?> getBool(String key) async {
+    return _storage[key] as bool?;
+  }
+
+  Future<void> remove(String key) async {
+    _storage.remove(key);
+  }
+
+  Future<void> clear() async {
+    _storage.clear();
+  }
+}
+
+final storageProvider = Provider<SimpleStorage>((ref) {
+  return SimpleStorage();
+});
+
+// Initialization function (no async needed now)
+void initDependencies() {
+  // All dependencies are now handled by Riverpod providers
+  // No need for manual initialization
+  print('✅ Dependencies initialized with Riverpod');
 }

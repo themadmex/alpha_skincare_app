@@ -1,95 +1,208 @@
-// lib/presentation/screens/home/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../widgets/home/greeting_card.dart';
-import '../../widgets/home/quick_actions.dart';
-import '../../widgets/home/skin_progress_card.dart';
-import '../../widgets/home/recent_scans.dart';
-import '../../widgets/home/daily_tips.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/scan_provider.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Load recent scans
-    Future.microtask(() => ref.read(scanControllerProvider.notifier).loadRecentScans());
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
-    final scanState = ref.watch(scanControllerProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         title: const Text('SkinSense'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Navigate to notifications
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.person_outline),
+            icon: const Icon(Icons.person),
             onPressed: () => context.go('/profile'),
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await ref.read(scanControllerProvider.notifier).loadRecentScans();
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Greeting card
-              const GreetingCard(),
-              const SizedBox(height: 16),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Welcome section
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome back, ${user?.name ?? 'User'}!',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'How is your skin feeling today?',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
-              // Quick actions
-              const QuickActions(),
-              const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
-              // Skin progress card
-              const SkinProgressCard(),
-              const SizedBox(height: 16),
+            // Quick actions
+            Text(
+              'Quick Actions',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
 
-              // Recent scans
-              const RecentScans(),
-              const SizedBox(height: 16),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              children: [
+                _QuickActionCard(
+                  icon: Icons.camera_alt,
+                  title: 'Scan Skin',
+                  description: 'Take a photo for analysis',
+                  onTap: () => context.go('/scan'),
+                ),
+                _QuickActionCard(
+                  icon: Icons.trending_up,
+                  title: 'View Progress',
+                  description: 'Track your skin health',
+                  onTap: () {
+                    // TODO: Navigate to progress screen
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Progress tracking coming soon!')),
+                    );
+                  },
+                ),
+                _QuickActionCard(
+                  icon: Icons.recommend,
+                  title: 'Recommendations',
+                  description: 'Get product suggestions',
+                  onTap: () {
+                    // TODO: Navigate to recommendations screen
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Recommendations coming soon!')),
+                    );
+                  },
+                ),
+                _QuickActionCard(
+                  icon: Icons.settings,
+                  title: 'Settings',
+                  description: 'Customize your app',
+                  onTap: () => context.go('/settings'),
+                ),
+              ],
+            ),
 
-              // Daily tips
-              const DailyTips(),
-              const SizedBox(height: 80), // Bottom padding for FAB
-            ],
-          ),
+            const SizedBox(height: 24),
+
+            // Recent activity placeholder
+            Text(
+              'Recent Activity',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.history,
+                      size: 48,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No recent activity',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Start by taking your first skin scan!',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => context.go('/scan'),
-        icon: const Icon(Icons.camera_alt),
-        label: const Text('Scan Skin'),
-        backgroundColor: Theme.of(context).primaryColor,
+        child: const Icon(Icons.camera_alt),
       ),
     );
   }
 }
 
+class _QuickActionCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+  final VoidCallback onTap;
 
+  const _QuickActionCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 32,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

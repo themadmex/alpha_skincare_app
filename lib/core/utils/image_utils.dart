@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 
+import '../../config/app_config.dart';
+
 class ImageUtils {
   static Future<File> compressImage(File imageFile, {int quality = 85}) async {
     final bytes = await imageFile.readAsBytes();

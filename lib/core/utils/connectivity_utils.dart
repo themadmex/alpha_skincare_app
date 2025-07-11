@@ -17,7 +17,7 @@ class ConnectivityUtils {
     return connectivityResult == ConnectivityResult.mobile;
   }
 
-  static Stream<List<ConnectivityResult>> get connectivityStream {
+  static Stream<ConnectivityResult> get connectivityStream {
     return Connectivity().onConnectivityChanged;
   }
 

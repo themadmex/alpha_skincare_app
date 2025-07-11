@@ -31,9 +31,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         loading: () => null, // Stay on current route while loading
         error: (error, stackTrace) {
           // On auth error, redirect to login unless already on auth pages
-          final isOnAuthPage = _isAuthPage(state.location);
-          final isOnSplash = state.location == AppConstants.routeSplash;
-          final isOnOnboarding = state.location == AppConstants.routeOnboarding;
+          final isOnAuthPage = _isAuthPage(state.uri.toString());
+          final isOnSplash = state.uri.toString() == AppConstants.routeSplash;
+          final isOnOnboarding = state.uri.toString() == AppConstants.routeOnboarding;
 
           if (!isOnAuthPage && !isOnSplash && !isOnOnboarding) {
             return AppConstants.routeLogin;
@@ -42,7 +42,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
         data: (user) {
           final isLoggedIn = user != null;
-          final currentLocation = state.location;
+          final currentLocation = state.uri.toString();
 
           // Authentication-based redirects
           if (!isLoggedIn) {
