@@ -1,57 +1,114 @@
 // lib/presentation/providers/auth_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../../data/repositories/auth_repository.dart';
+import '../../domain/entities/user.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../../data/repositories/auth_repository_impl.dart';
 
+// Auth Repository Provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository();
+  return AuthRepositoryImpl();
 });
 
+// Auth State Provider
 final authStateProvider = StreamProvider<User?>((ref) {
-  return FirebaseAuth.instance.authStateChanges();
+  final authRepository = ref.watch(authRepositoryProvider);
+  return authRepository.authStateChanges;
 });
 
-final authControllerProvider = NotifierProvider<AuthController, AsyncValue<User?>>(() {
-  return AuthController();
-});
+// Auth Controller State
+class AuthState {
+  final User? user;
+  final bool isLoading;
+  final String? error;
 
-class AuthController extends Notifier<AsyncValue<User?>> {
-  @override
-  AsyncValue<User?> build() {
-    return const AsyncValue.loading();
+  const AuthState({
+    this.user,
+    this.isLoading = false,
+    this.error,
+  });
+
+  AuthState copyWith({
+    User? user,
+    bool? isLoading,
+    String? error,
+  }) {
+    return AuthState(
+      user: user ?? this.user,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+    );
+  }
+}
+
+// Auth Controller
+class AuthController extends StateNotifier<AuthState> {
+  final AuthRepository _authRepository;
+
+  AuthController(this._authRepository) : super(const AuthState()) {
+    _init();
   }
 
-  Future<void> signInWithEmail(String email, String password) async {
-    state = const AsyncValue.loading();
+  void _init() {
+    _authRepository.authStateChanges.listen((user) {
+      state = state.copyWith(user: user, isLoading: false);
+    });
+  }
 
+  Future<void> signUp(String email, String password, String name) async {
+    state = state.copyWith(isLoading: true, error: null);
     try {
-      final authRepository = ref.read(authRepositoryProvider);
-      final user = await authRepository.signInWithEmail(email, password);
-      state = AsyncValue.data(user);
+      await _authRepository.signUp(email, password, name);
     } catch (e) {
-      state = AsyncValue.error(e, StackTrace.current);
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
     }
   }
 
-  Future<void> signUpWithEmail(String email, String password) async {
-    state = const AsyncValue.loading();
-
+  Future<void> signIn(String email, String password) async {
+    state = state.copyWith(isLoading: true, error: null);
     try {
-      final authRepository = ref.read(authRepositoryProvider);
-      final user = await authRepository.signUpWithEmail(email, password);
-      state = AsyncValue.data(user);
+      await _authRepository.signIn(email, password);
     } catch (e) {
-      state = AsyncValue.error(e, StackTrace.current);
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
     }
   }
 
   Future<void> signOut() async {
+    state = state.copyWith(isLoading: true, error: null);
     try {
-      final authRepository = ref.read(authRepositoryProvider);
-      await authRepository.signOut();
-      state = const AsyncValue.data(null);
+      await _authRepository.signOut();
     } catch (e) {
-      state = AsyncValue.error(e, StackTrace.current);
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> sendPasswordReset(String email) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _authRepository.sendPasswordResetEmail(email);
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> updateProfile(User user) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _authRepository.updateProfile(user);
+      state = state.copyWith(isLoading: false, user: user);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
     }
   }
 }
+
+// Auth Controller Provider
+final authControllerProvider = StateNotifierProvider<AuthController, AuthState>((ref) {
+  final authRepository = ref.watch(authRepositoryProvider);
+  return AuthController(authRepository);
+});

@@ -1,8 +1,11 @@
 // lib/config/routes.dart
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../features/results/screens/results_screen.dart';
+import '../presentation/navigation/main_navigation_shell.dart';
 import '../presentation/screens/splash/splash_screen.dart';
 import '../presentation/screens/onboarding/onboarding_screen.dart';
 import '../presentation/screens/auth/login_screen.dart';
@@ -18,19 +21,25 @@ import '../presentation/screens/profile/history_screen.dart';
 import '../presentation/screens/settings/settings_screen.dart';
 import '../presentation/providers/auth_provider.dart';
 
-class AppRouter {
-  static final router = GoRouter(
-    initialLocation: '/splash',
-    redirect: (context, state) {
-      final container = ProviderContainer();
-      final authState = container.read(authStateProvider);
+// Create a provider to expose the GoRouter instance
+final routerProvider = Provider<GoRouter>((ref) {
+  // Listen to auth state changes for redirect purposes
+  final authListenable = ValueNotifier<bool?>(null);
 
-      // Check if user is authenticated
-      final isAuthenticated = authState.when(
-        data: (user) => user != null,
-        loading: () => false,
-        error: (_, __) => false,
-      );
+  // Watch the authStateProvider and update the listenable
+  ref.listen(authStateProvider, (previous, next) {
+    authListenable.value = next.when(
+      data: (user) => user != null,
+      loading: () => false,
+      error: (_, __) => false,
+    );
+  });
+
+  return GoRouter(
+    initialLocation: '/splash',
+    refreshListenable: authListenable,
+    redirect: (BuildContext context, GoRouterState state) {
+      final isAuthenticated = authListenable.value ?? false;
 
       // Redirect logic
       if (!isAuthenticated &&
@@ -60,25 +69,21 @@ class AppRouter {
       // Authentication Routes
       GoRoute(
         path: '/auth',
-        redirect: (context, state) {
-          if (state.matchedLocation == '/auth') {
-            return '/auth/login';
-          }
-          return null;
-        },
+        name: 'auth',
+        builder: (context, state) => const LoginScreen(), // Default to LoginScreen
         routes: [
           GoRoute(
-            path: '/login',
+            path: 'login',
             name: 'login',
             builder: (context, state) => const LoginScreen(),
           ),
           GoRoute(
-            path: '/signup',
+            path: 'signup',
             name: 'signup',
             builder: (context, state) => const SignupScreen(),
           ),
           GoRoute(
-            path: '/forgot-password',
+            path: 'forgot-password',
             name: 'forgot-password',
             builder: (context, state) => const ForgotPasswordScreen(),
           ),
@@ -102,10 +107,11 @@ class AppRouter {
             builder: (context, state) => const ScanScreen(),
             routes: [
               GoRoute(
-                path: '/processing',
+                path: 'processing',
                 name: 'processing',
                 builder: (context, state) {
-                  final imagePath = state.extra as String?;
+                  // Safely handle state.extra
+                  final imagePath = state.extra is String ? state.extra as String? : null;
                   return ProcessingScreen(imagePath: imagePath);
                 },
               ),
@@ -130,7 +136,7 @@ class AppRouter {
             builder: (context, state) => const ProfileScreen(),
             routes: [
               GoRoute(
-                path: '/history',
+                path: 'history',
                 name: 'history',
                 builder: (context, state) => const HistoryScreen(),
               ),
@@ -145,4 +151,4 @@ class AppRouter {
       ),
     ],
   );
-}
+});

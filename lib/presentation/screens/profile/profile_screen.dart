@@ -1,250 +1,164 @@
-// lib/presentation/screens/profile/profile_setup_screen.dart
+// lib/presentation/screens/profile/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../widgets/common/custom_button.dart';
-import '../../widgets/common/custom_text_field.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
-import '../../../domain/entities/profile.dart';
+import '../../widgets/common/custom_button.dart';
 
-class ProfileSetupScreen extends ConsumerStatefulWidget {
-  const ProfileSetupScreen({super.key});
-
-  @override
-  ConsumerState<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
-}
-
-class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _ageController = TextEditingController();
-
-  String _selectedGender = '';
-  String _selectedSkinType = '';
-  List<String> _selectedConcerns = [];
-
-  final List<String> _genders = ['Male', 'Female', 'Other', 'Prefer not to say'];
-  final List<String> _skinTypes = ['Oily', 'Dry', 'Combination', 'Normal', 'Sensitive'];
-  final List<String> _skinConcerns = [
-    'Acne',
-    'Dark Spots',
-    'Wrinkles',
-    'Dryness',
-    'Oiliness',
-    'Sensitivity',
-    'Pores',
-    'Dullness',
-    'Uneven Tone',
-    'Redness',
-  ];
+class ProfileScreen extends ConsumerWidget {
+  const ProfileScreen({super.key});
 
   @override
-  void dispose() {
-    _ageController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _saveProfile() async {
-    if (_formKey.currentState!.validate() && _selectedGender.isNotEmpty && _selectedSkinType.isNotEmpty) {
-      final profile = UserProfile(
-        id: '',
-        age: int.parse(_ageController.text),
-        gender: _selectedGender,
-        skinType: _selectedSkinType,
-        skinConcerns: _selectedConcerns,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-
-      try {
-        await ref.read(profileControllerProvider.notifier).updateProfile(profile);
-        context.go('/home');
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save profile: $e')),
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authControllerProvider);
     final profileState = ref.watch(profileControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Setup Your Profile'),
-        automaticallyImplyLeading: false,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Tell us about yourself',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'This helps us provide personalized skincare recommendations',
-                  style: TextStyle(color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-
-                // Age
-                CustomTextField(
-                  controller: _ageController,
-                  label: 'Age',
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your age';
-                    }
-                    final age = int.tryParse(value);
-                    if (age == null || age < 13 || age > 100) {
-                      return 'Please enter a valid age (13-100)';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                // Gender
-                _buildSectionTitle('Gender'),
-                _buildChipSelection(
-                  options: _genders,
-                  selectedValue: _selectedGender,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedGender = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                // Skin Type
-                _buildSectionTitle('Skin Type'),
-                const Text(
-                  'Not sure? Take our skin analysis after setup!',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-                const SizedBox(height: 8),
-                _buildChipSelection(
-                  options: _skinTypes,
-                  selectedValue: _selectedSkinType,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedSkinType = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                // Skin Concerns
-                _buildSectionTitle('Skin Concerns (Optional)'),
-                const Text(
-                  'Select all that apply',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-                const SizedBox(height: 8),
-                _buildMultiChipSelection(
-                  options: _skinConcerns,
-                  selectedValues: _selectedConcerns,
-                  onChanged: (values) {
-                    setState(() {
-                      _selectedConcerns = values;
-                    });
-                  },
-                ),
-                const SizedBox(height: 32),
-
-                CustomButton(
-                  text: 'Complete Setup',
-                  onPressed: (_selectedGender.isNotEmpty &&
-                      _selectedSkinType.isNotEmpty &&
-                      !profileState.isLoading)
-                      ? _saveProfile
-                      : null,
-                  isLoading: profileState.isLoading,
-                ),
-              ],
-            ),
+        title: const Text('Profile'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => context.go('/settings'),
           ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Profile header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Theme.of(context).primaryColor,
+                    child: const Icon(
+                      Icons.person,
+                      size: 50,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    authState.user?.name ?? 'User',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    authState.user?.email ?? '',
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Profile info
+            profileState.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => const Text('Error loading profile'),
+              data: (profile) => Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Skin Profile',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildProfileItem('Age', '${profile.age} years'),
+                    _buildProfileItem('Gender', profile.gender),
+                    _buildProfileItem('Skin Type', profile.skinType),
+                    if (profile.skinConcerns.isNotEmpty)
+                      _buildProfileItem(
+                        'Concerns',
+                        profile.skinConcerns.join(', '),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Action buttons
+            CustomButton(
+              text: 'Edit Profile',
+              onPressed: () => context.go('/profile-setup'),
+            ),
+            const SizedBox(height: 12),
+
+            CustomButton(
+              text: 'Sign Out',
+              isOutlined: true,
+              onPressed: () async {
+                await ref.read(authControllerProvider.notifier).signOut();
+                context.go('/auth/login');
+              },
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
+  Widget _buildProfileItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildChipSelection({
-    required List<String> options,
-    required String selectedValue,
-    required Function(String) onChanged,
-  }) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: options.map((option) {
-        final isSelected = selectedValue == option;
-        return FilterChip(
-          label: Text(option),
-          selected: isSelected,
-          onSelected: (selected) {
-            if (selected) {
-              onChanged(option);
-            }
-          },
-          backgroundColor: Colors.grey.withOpacity(0.1),
-          selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-          checkmarkColor: Theme.of(context).primaryColor,
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildMultiChipSelection({
-    required List<String> options,
-    required List<String> selectedValues,
-    required Function(List<String>) onChanged,
-  }) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: options.map((option) {
-        final isSelected = selectedValues.contains(option);
-        return FilterChip(
-          label: Text(option),
-          selected: isSelected,
-          onSelected: (selected) {
-            final newValues = List<String>.from(selectedValues);
-            if (selected) {
-              newValues.add(option);
-            } else {
-              newValues.remove(option);
-            }
-            onChanged(newValues);
-          },
-          backgroundColor: Colors.grey.withOpacity(0.1),
-          selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-          checkmarkColor: Theme.of(context).primaryColor,
-        );
-      }).toList(),
     );
   }
 }

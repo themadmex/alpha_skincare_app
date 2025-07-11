@@ -1,89 +1,127 @@
 // lib/presentation/widgets/common/custom_text_field.dart
 import 'package:flutter/material.dart';
 
-class CustomTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String label;
+class CustomTextField extends StatefulWidget {
+  final TextEditingController? controller;
+  final String? label;
   final String? hint;
-  final IconData? prefixIcon;
-  final Widget? suffixIcon;
+  final String? initialValue;
   final bool obscureText;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
-  final VoidCallback? onTap;
-  final bool readOnly;
-  final int? maxLines;
+  final void Function(String)? onChanged;
+  final void Function(String)? onSubmitted;
+  final IconData? prefixIcon;
+  final IconData? suffixIcon;
+  final VoidCallback? onSuffixIconPressed;
+  final bool enabled;
+  final int maxLines;
+  final int? maxLength;
+  final TextInputAction? textInputAction;
+  final FocusNode? focusNode;
+  final bool autofocus;
+  final EdgeInsets? contentPadding;
 
   const CustomTextField({
     super.key,
-    required this.controller,
-    required this.label,
+    this.controller,
+    this.label,
     this.hint,
-    this.prefixIcon,
-    this.suffixIcon,
+    this.initialValue,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.validator,
-    this.onTap,
-    this.readOnly = false,
+    this.onChanged,
+    this.onSubmitted,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.onSuffixIconPressed,
+    this.enabled = true,
     this.maxLines = 1,
+    this.maxLength,
+    this.textInputAction,
+    this.focusNode,
+    this.autofocus = false,
+    this.contentPadding,
   });
 
   @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  late bool _isObscured;
+
+  @override
+  void initState() {
+    super.initState();
+    _isObscured = widget.obscureText;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
-          ),
+    return TextFormField(
+      controller: widget.controller,
+      initialValue: widget.initialValue,
+      obscureText: _isObscured,
+      keyboardType: widget.keyboardType,
+      validator: widget.validator,
+      onChanged: widget.onChanged,
+      onFieldSubmitted: widget.onSubmitted,
+      enabled: widget.enabled,
+      maxLines: widget.maxLines,
+      maxLength: widget.maxLength,
+      textInputAction: widget.textInputAction,
+      focusNode: widget.focusNode,
+      autofocus: widget.autofocus,
+      decoration: InputDecoration(
+        labelText: widget.label,
+        hintText: widget.hint,
+        prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon) : null,
+        suffixIcon: widget.obscureText
+            ? IconButton(
+          icon: Icon(_isObscured ? Icons.visibility : Icons.visibility_off),
+          onPressed: () {
+            setState(() {
+              _isObscured = !_isObscured;
+            });
+          },
+        )
+            : widget.suffixIcon != null
+            ? IconButton(
+          icon: Icon(widget.suffixIcon),
+          onPressed: widget.onSuffixIconPressed,
+        )
+            : null,
+        contentPadding: widget.contentPadding ??
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        filled: true,
+        fillColor: Colors.grey.withOpacity(0.1),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          validator: validator,
-          onTap: onTap,
-          readOnly: readOnly,
-          maxLines: maxLines,
-          decoration: InputDecoration(
-            hintText: hint ?? label,
-            prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-            suffixIcon: suffixIcon,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Theme.of(context).primaryColor),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.red),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.red),
-            ),
-            filled: true,
-            fillColor: Colors.grey.withOpacity(0.05),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
-            ),
-          ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
-      ],
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
     );
   }
 }

@@ -14,10 +14,10 @@ class AppTheme {
       titleTextStyle: TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w600),
     ),
     textTheme: const TextTheme(
-      headline1: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black87),
-      headline6: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black87),
-      bodyText1: TextStyle(fontSize: 16, color: Colors.black87),
-      bodyText2: TextStyle(fontSize: 14, color: Colors.black54),
+      displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black87),
+      titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black87),
+      bodyLarge: TextStyle(fontSize: 16, color: Colors.black87),
+      bodyMedium: TextStyle(fontSize: 14, color: Colors.black54),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -36,10 +36,10 @@ class AppTheme {
       titleTextStyle: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
     ),
     textTheme: const TextTheme(
-      headline1: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-      headline6: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
-      bodyText1: TextStyle(fontSize: 16, color: Colors.white70),
-      bodyText2: TextStyle(fontSize: 14, color: Colors.white54),
+      displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+      titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
+      bodyLarge: TextStyle(fontSize: 16, color: Colors.white70),
+      bodyMedium: TextStyle(fontSize: 14, color: Colors.white54),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),

@@ -18,7 +18,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -29,10 +28,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _signIn() async {
     if (_formKey.currentState!.validate()) {
-      await ref.read(authControllerProvider.notifier).signInWithEmail(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+      try {
+        await ref.read(authControllerProvider.notifier).signIn(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+        context.go('/home');
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
     }
   }
 
@@ -52,28 +58,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 60),
 
                 // Logo and title
-                Hero(
-                  tag: 'app_logo',
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    height: 80,
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(
+                          Icons.face,
+                          size: 40,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Welcome back!',
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Sign in to continue your skincare journey',
+                        style: TextStyle(color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 24),
-
-                Text(
-                  'Welcome back!',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-
-                const Text(
-                  'Sign in to continue your skincare journey',
-                  style: TextStyle(color: Colors.grey),
-                  textAlign: TextAlign.center,
                 ),
 
                 const SizedBox(height: 48),
@@ -86,39 +101,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   validator: Validators.email,
                   prefixIcon: Icons.email_outlined,
                 ),
-
                 const SizedBox(height: 16),
 
                 // Password field
                 CustomTextField(
                   controller: _passwordController,
                   label: 'Password',
-                  obscureText: _obscurePassword,
-                  validator: Validators.password,
+                  obscureText: true,
+                  validator: (value) => Validators.required(value, 'Password'),
                   prefixIcon: Icons.lock_outline,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
                 ),
-
-                const SizedBox(height: 8),
-
-                // Forgot password
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => context.go('/auth/forgot-password'),
-                    child: const Text('Forgot Password?'),
-                  ),
-                ),
-
                 const SizedBox(height: 24),
 
                 // Sign in button
@@ -127,49 +119,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onPressed: authState.isLoading ? null : _signIn,
                   isLoading: authState.isLoading,
                 ),
+                const SizedBox(height: 16),
 
-                const SizedBox(height: 24),
-
-                // Divider
-                const Row(
-                  children: [
-                    Expanded(child: Divider()),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('or continue with'),
-                    ),
-                    Expanded(child: Divider()),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // Social login buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          // TODO: Implement Google Sign In
-                        },
-                        icon: Image.asset(
-                          'assets/images/google_icon.png',
-                          height: 20,
-                        ),
-                        label: const Text('Google'),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          // TODO: Implement Apple Sign In
-                        },
-                        icon: const Icon(Icons.apple),
-                        label: const Text('Apple'),
-                      ),
-                    ),
-                  ],
+                // Forgot password
+                TextButton(
+                  onPressed: () => context.go('/auth/forgot-password'),
+                  child: const Text('Forgot Password?'),
                 ),
 
                 const SizedBox(height: 32),
@@ -186,23 +141,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ],
                 ),
 
-                // Error message
-                if (authState.hasError)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+                const SizedBox(height: 32),
+
+                // Demo credentials (for testing)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Demo Credentials',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
-                      child: Text(
-                        authState.error.toString(),
-                        style: const TextStyle(color: Colors.red),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Email: test@example.com\nPassword: password123',
+                        style: TextStyle(fontSize: 12),
                         textAlign: TextAlign.center,
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () {
+                          _emailController.text = 'test@example.com';
+                          _passwordController.text = 'password123';
+                        },
+                        child: const Text('Fill Demo Data'),
+                      ),
+                    ],
                   ),
+                ),
               ],
             ),
           ),

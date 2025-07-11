@@ -1,41 +1,118 @@
 // lib/presentation/providers/scan_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:io';
 import '../../domain/entities/scan_result.dart';
-import '../../data/repositories/scan_repository.dart';
+import '../../domain/repositories/scan_repository.dart';
+import '../../data/repositories/scan_repository_impl.dart';
+import 'auth_provider.dart';
 
+// Scan Repository Provider
 final scanRepositoryProvider = Provider<ScanRepository>((ref) {
-  return ScanRepository();
+  return ScanRepositoryImpl();
 });
 
-final scanControllerProvider = NotifierProvider<ScanController, AsyncValue<ScanResult?>>(() {
-  return ScanController();
-});
+// Scan State
+class ScanState {
+  final List<ScanResult> scanResults;
+  final bool isLoading;
+  final String? error;
 
-class ScanController extends Notifier<AsyncValue<ScanResult?>> {
-  @override
-  AsyncValue<ScanResult?> build() {
-    return const AsyncValue.data(null);
-  }
+  const ScanState({
+    this.scanResults = const [],
+    this.isLoading = false,
+    this.error,
+  });
 
-  Future<void> analyzeSkin(File imageFile) async {
-    state = const AsyncValue.loading();
-
-    try {
-      final scanRepository = ref.read(scanRepositoryProvider);
-      final result = await scanRepository.analyzeSkin(imageFile);
-      state = AsyncValue.data(result);
-    } catch (e) {
-      state = AsyncValue.error(e, StackTrace.current);
-    }
-  }
-
-  void clearResult() {
-    state = const AsyncValue.data(null);
+  ScanState copyWith({
+    List<ScanResult>? scanResults,
+    bool? isLoading,
+    String? error,
+  }) {
+    return ScanState(
+      scanResults: scanResults ?? this.scanResults,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+    );
   }
 }
 
-final scanHistoryProvider = StreamProvider<List<ScanResult>>((ref) {
-  final scanRepository = ref.read(scanRepositoryProvider);
-  return scanRepository.getScanHistory();
+// Scan Controller
+class ScanController extends StateNotifier<ScanState> {
+  final ScanRepository _scanRepository;
+
+  ScanController(this._scanRepository) : super(const ScanState());
+
+  Future<void> analyzeSkin(String imagePath) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final result = await _scanRepository.analyzeSkin(imagePath);
+      final updatedResults = [result, ...state.scanResults];
+      state = state.copyWith(
+        isLoading: false,
+        scanResults: updatedResults,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> loadScanHistory(String userId) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final results = await _scanRepository.getScanHistory(userId);
+      state = state.copyWith(
+        isLoading: false,
+        scanResults: results,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> loadRecentScans() async {
+    // For now, we'll use a mock user ID
+    // In a real app, this would come from the auth state
+    await loadRecentScansForUser('mock_user_id');
+  }
+
+  Future<void> loadRecentScansForUser(String userId) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final results = await _scanRepository.getRecentScans(userId, limit: 5);
+      state = state.copyWith(
+        isLoading: false,
+        scanResults: results,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> loadAllScans() async {
+    // For now, we'll use a mock user ID
+    await loadScanHistory('mock_user_id');
+  }
+
+  Future<void> deleteScanResult(String scanId) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _scanRepository.deleteScanResult(scanId);
+      final updatedResults = state.scanResults
+          .where((result) => result.id != scanId)
+          .toList();
+      state = state.copyWith(
+        isLoading: false,
+        scanResults: updatedResults,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
+    }
+  }
+}
+
+// Scan Controller Provider
+final scanControllerProvider = StateNotifierProvider<ScanController, ScanState>((ref) {
+  final scanRepository = ref.watch(scanRepositoryProvider);
+  return ScanController(scanRepository);
 });
