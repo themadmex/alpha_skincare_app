@@ -22,7 +22,9 @@ class ScanResultsScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {
-              // TODO: Implement sharing
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Sharing not implemented yet.')),
+              );
             },
           ),
         ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -9,6 +10,8 @@ class ScanScreen extends StatefulWidget {
 }
 
 class _ScanScreenState extends State<ScanScreen> {
+  final ImagePicker _picker = ImagePicker();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,12 +97,7 @@ class _ScanScreenState extends State<ScanScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () {
-                      // TODO: Implement gallery selection
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Gallery selection coming soon!')),
-                      );
-                    },
+                    onPressed: _selectFromGallery,
                     icon: const Icon(Icons.photo_library),
                     label: const Text('Gallery'),
                   ),
@@ -108,12 +106,7 @@ class _ScanScreenState extends State<ScanScreen> {
                 Expanded(
                   flex: 2,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      // TODO: Implement camera capture
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Camera capture coming soon!')),
-                      );
-                    },
+                    onPressed: _captureImage,
                     icon: const Icon(Icons.camera_alt),
                     label: const Text('Take Photo'),
                   ),
@@ -150,5 +143,19 @@ class _ScanScreenState extends State<ScanScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _selectFromGallery() async {
+    final picked = await _picker.pickImage(source: ImageSource.gallery);
+    if (picked != null && mounted) {
+      context.go('/scan/processing', extra: picked.path);
+    }
+  }
+
+  Future<void> _captureImage() async {
+    final picked = await _picker.pickImage(source: ImageSource.camera);
+    if (picked != null && mounted) {
+      context.go('/scan/processing', extra: picked.path);
+    }
   }
 }

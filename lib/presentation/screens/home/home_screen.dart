@@ -78,23 +78,13 @@ class HomeScreen extends ConsumerWidget {
                   icon: Icons.trending_up,
                   title: 'View Progress',
                   description: 'Track your skin health',
-                  onTap: () {
-                    // TODO: Navigate to progress screen
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Progress tracking coming soon!')),
-                    );
-                  },
+                  onTap: () => context.go('/progress'),
                 ),
                 _QuickActionCard(
                   icon: Icons.recommend,
                   title: 'Recommendations',
                   description: 'Get product suggestions',
-                  onTap: () {
-                    // TODO: Navigate to recommendations screen
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Recommendations coming soon!')),
-                    );
-                  },
+                  onTap: () => context.go('/recommendations'),
                 ),
                 _QuickActionCard(
                   icon: Icons.settings,

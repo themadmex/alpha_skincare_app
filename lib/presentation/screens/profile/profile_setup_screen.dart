@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../providers/auth_provider.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
@@ -120,7 +121,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       'setupCompleted': true,
     };
 
-    // TODO: Save to your data source (Hive, Firebase, etc.)
+    await Hive.box('user_data').put('profile', profileData);
     debugPrint('Profile setup completed: $profileData');
 
     // Show success and navigate to home
