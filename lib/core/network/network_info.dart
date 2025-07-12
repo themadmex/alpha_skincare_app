@@ -1,1 +1,3 @@
-// TODO Implement this library.
+class NetworkInfo {
+  Future<bool> get isConnected async => true;
+}

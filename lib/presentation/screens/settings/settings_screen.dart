@@ -28,9 +28,7 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.security,
             title: 'Privacy & Security',
             subtitle: 'Manage your privacy settings',
-            onTap: () {
-              // TODO: Navigate to privacy settings
-            },
+            onTap: () => context.go('/settings/privacy'),
           ),
 
           const SizedBox(height: 24),
@@ -41,25 +39,19 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.notifications_outline,
             title: 'Notifications',
             subtitle: 'Configure notification preferences',
-            onTap: () {
-              // TODO: Navigate to notification settings
-            },
+            onTap: () => context.go('/settings/notifications'),
           ),
           _buildSettingsTile(
             icon: Icons.dark_mode_outlined,
             title: 'Theme',
             subtitle: 'Choose your preferred theme',
-            onTap: () {
-              // TODO: Show theme selector
-            },
+            onTap: () => context.go('/settings/theme'),
           ),
           _buildSettingsTile(
             icon: Icons.language,
             title: 'Language',
             subtitle: 'Change app language',
-            onTap: () {
-              // TODO: Show language selector
-            },
+            onTap: () => _showLanguageDialog(context),
           ),
 
           const SizedBox(height: 24),
@@ -71,7 +63,9 @@ class SettingsScreen extends ConsumerWidget {
             title: 'Help Center',
             subtitle: 'Get help and support',
             onTap: () {
-              // TODO: Navigate to help center
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Help center coming soon!')),
+              );
             },
           ),
           _buildSettingsTile(
@@ -79,7 +73,9 @@ class SettingsScreen extends ConsumerWidget {
             title: 'Send Feedback',
             subtitle: 'Share your thoughts with us',
             onTap: () {
-              // TODO: Show feedback form
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Feedback form coming soon!')),
+              );
             },
           ),
           _buildSettingsTile(
@@ -160,6 +156,28 @@ class SettingsScreen extends ConsumerWidget {
           'AI-powered skin analysis and personalized skincare recommendations.',
         ),
       ],
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Choose Language'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text('English'),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+            ListTile(
+              title: const Text('Spanish'),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

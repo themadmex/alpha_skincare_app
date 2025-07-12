@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/scan_provider.dart';
-import '../../widgets/progress/progress_overview.dart';
+import 'progress_overview.dart';
 import '../../widgets/progress/timeline_view.dart';
 import '../../widgets/progress/metrics_comparison.dart';
 
