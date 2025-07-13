@@ -63,6 +63,7 @@ class SkinSenseApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
     final settings = ref.watch(settingsProvider);
+    final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
       title: 'SkinSense',

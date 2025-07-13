@@ -19,7 +19,7 @@ import '../presentation/screens/progress/progress_screen.dart';
 import '../presentation/screens/profile/profile_screen.dart';
 import '../presentation/screens/settings/settings_screen.dart';
 import '../presentation/providers/auth_provider.dart';
-import '../presentation/screens/profile/history_screen.dart' as history_screen;
+import '../presentation/screens/profile/history_screen.dart';
 
 // Route Constants
 class _Routes {
