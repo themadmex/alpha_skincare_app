@@ -1,62 +1,112 @@
-name: alpha_skincare_app
-description: AI-powered skin analysis & personalized recommendations.
-publish_to: 'none'
-version: 1.0.0+1
+# Project identity
+name: alpha_skincare_app               # Your app's package name
+description: AI-powered skin analysis and personalized skincare recommendations app
+version: 1.0.0+1                       # Semantic version + build number
 
+# Minimum SDK versions
 environment:
-  sdk: '>=2.19.0 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.10.0'
 
+# Flutter-specific settings
+flutter:
+  uses-material-design: true           # Enables Material icons/fonts
+  assets:                              # List any asset directories/files here
+    - assets/images/
+    - assets/images/onboarding/
+    - assets/images/icons/
+    - assets/images/backgrounds/
+    - assets/ml_models/
+    - assets/data/
+    - .env
+
+# Third-party packages your app uses
 dependencies:
   flutter:
     sdk: flutter
-  lottie: ^3.1.2
-  intl: ^0.19.0
-  flutter_riverpod: ^2.5.1
-  firebase_core: ^3.6.0
-  firebase_auth: ^5.2.1  # Downgraded to resolve conflict
-  cloud_firestore: ^5.4.4
-  firebase_storage: ^12.3.2
-  firebase_messaging: ^15.2.9
-  camera: ^0.11.0+1
-  image: ^4.3.0
-  image_picker: ^1.1.2
-  permission_handler: ^11.3.1
-  tflite_flutter: ^0.10.4
-  flutter_local_notifications: ^17.2.3
-  connectivity_plus: ^5.0.2
-  device_info_plus: ^9.1.2
-  package_info_plus: ^8.0.0
-  geolocator: ^12.0.0  # Use the latest version
-  geocoding: ^3.0.0    # Use the latest version
-  hive_flutter: ^1.1.0 # Add this line
-  fl_chart: ^0.68.0 # Add this line (use the latest version)
-  build_runner: ^2.4.9 # Add for code generation
-  get_it: ^7.6.4
-  dio: ^5.4.0
-  equatable: ^2.0.5
-  shared_preferences: ^2.2.2
-  flutter_secure_storage: ^9.0.0
+
+  # State Management
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+
+  # Navigation
   go_router: ^12.1.3
 
+  # UI & Design
+  cupertino_icons: ^1.0.2
+  google_fonts: ^6.1.0
 
+  # Authentication & Security
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  google_sign_in: ^6.1.6
+  sign_in_with_apple: ^5.0.0
+  crypto: ^3.0.3
+  local_auth: ^2.1.7
+
+  # Camera & Image Processing
+  camera: ^0.10.5+5
+  image_picker: ^1.0.4
+  image: ^4.1.3
+  path_provider: ^2.1.1
+  permission_handler: ^11.1.0
+
+  # Machine Learning
+  tflite_flutter: ^0.9.0               # Downgraded to avoid conflicts
+  tflite_flutter_helper: ^0.2.1
+
+  # Database & Storage
+  sqflite: ^2.3.0
+  shared_preferences: ^2.2.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Network & API
+  http: ^1.1.0
+  dio: ^5.3.3
+  json_annotation: ^4.8.1
+  connectivity_plus: ^5.0.2
+
+  # Utilities
+  intl: ^0.18.1
+  uuid: ^4.2.1
+  flutter_dotenv: ^5.1.0
+  package_info_plus: ^4.2.0
+  device_info_plus: ^9.1.1
+
+  # Notifications
+  flutter_local_notifications: ^16.3.0
+  firebase_messaging: ^14.7.10
+
+  # Charts & Analytics
+  fl_chart: ^0.65.0
+  firebase_analytics: ^10.7.4
+  firebase_crashlytics: ^3.4.8
+
+  # Social Sharing
+  share_plus: ^7.2.1
+  url_launcher: ^6.2.2
+
+# Packages used only during development
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
-  mocktail: ^1.0.4
+
+  # Code generation tools
+  build_runner: ^2.4.7
+  riverpod_generator: ^2.3.9
+  json_serializable: ^6.7.1
+  hive_generator: ^2.0.1
+
+  # Testing
+  mockito: ^5.4.2
   integration_test:
     sdk: flutter
 
+  # Linting
+  flutter_lints: ^3.0.0
+
+# Override versions when necessary
 dependency_overrides:
-  web: ^1.0.0
-
-flutter:
-  uses-material-design: true
-
-  assets:
-    - assets/images/
-    - assets/tflite/skin_model.tflite
-    - assets/images/
-    - assets/animations/
-    - assets/models/
-    - assets/icons/
+  image: ^3.0.2
+  ffi: ^2.0.1     # <- enforce the newer ffi for everyone
