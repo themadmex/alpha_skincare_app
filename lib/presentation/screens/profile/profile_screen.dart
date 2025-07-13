@@ -16,7 +16,12 @@ class ProfileScreen extends ConsumerWidget {
         title: const Text('Profile'),
         actions: [
           TextButton(
-            onPressed: () => _showEditProfileDialog(context, ref),
+            onPressed: () {
+              // TODO: Implement edit profile
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Edit profile coming soon!')),
+              );
+            },
             child: const Text('Edit'),
           ),
         ],
@@ -128,47 +133,6 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showEditProfileDialog(BuildContext context, WidgetRef ref) {
-    final user = ref.read(currentUserProvider);
-    final nameController = TextEditingController(text: user?.name ?? '');
-    final emailController = TextEditingController(text: user?.email ?? '');
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Profile'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile saved (mock).')),
-              );
-            },
-            child: const Text('Save'),
-          ),
-        ],
       ),
     );
   }
