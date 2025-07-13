@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "949373080017",
+    "project_id": "alpha-skin-care-app",
+    "storage_bucket": "alpha-skin-care-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:949373080017:android:070284a173fa41741710f0",
+        "android_client_info": {
+          "package_name": "com.example.alpha_skin_care_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUWmjqIs1FpPCpT-88DrYVN6JGjY0baCM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

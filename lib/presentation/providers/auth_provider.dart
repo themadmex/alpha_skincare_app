@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' as app_user;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -235,3 +236,274 @@ class AuthService {
       rethrow;
     }
   }
+
+  /// Sign in with Apple
+  Future<void> signInWithApple() async {
+    final authState = _ref.read(authStateProvider);
+
+    authState
+      ..isLoading = true
+      ..error = null
+      ..notifyListeners();
+
+    try {
+      final user = await _authRepository.signInWithApple();
+
+      // Check if profile is complete for social sign in
+      final isProfileComplete = user.skinType != null && user.skinConcerns.isNotEmpty;
+      await _prefs.setBool(_profileCompleteKey, isProfileComplete);
+
+      authState
+        ..isAuthenticated = true
+        ..isProfileComplete = isProfileComplete
+        ..user = user
+        ..isLoading = false
+        ..notifyListeners();
+    } catch (e) {
+      authState
+        ..isLoading = false
+        ..error = _getErrorMessage(e)
+        ..notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// Reset password
+  Future<void> resetPassword(String email) async {
+    final authState = _ref.read(authStateProvider);
+
+    authState
+      ..isLoading = true
+      ..error = null
+      ..notifyListeners();
+
+    try {
+      await _authRepository.resetPassword(email);
+
+      authState
+        ..isLoading = false
+        ..notifyListeners();
+    } catch (e) {
+      authState
+        ..isLoading = false
+        ..error = _getErrorMessage(e)
+        ..notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// Update user profile
+  Future<void> updateProfile({
+    String? name,
+    String? photoUrl,
+    String? skinType,
+    List<String>? skinConcerns,
+    int? ageRange,
+    String? gender,
+  }) async {
+    final authState = _ref.read(authStateProvider);
+
+    authState
+      ..isLoading = true
+      ..error = null
+      ..notifyListeners();
+
+    try {
+      final updatedUser = await _authRepository.updateUserProfile(
+        name: name,
+        photoUrl: photoUrl,
+        skinType: skinType,
+        skinConcerns: skinConcerns,
+        ageRange: ageRange,
+        gender: gender,
+      );
+
+      // Check if profile is now complete
+      final isProfileComplete = updatedUser.skinType != null &&
+          updatedUser.skinConcerns.isNotEmpty;
+      await _prefs.setBool(_profileCompleteKey, isProfileComplete);
+
+      authState
+        ..user = updatedUser
+        ..isProfileComplete = isProfileComplete
+        ..isLoading = false
+        ..notifyListeners();
+    } catch (e) {
+      authState
+        ..isLoading = false
+        ..error = _getErrorMessage(e)
+        ..notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// Sign out
+  Future<void> signOut() async {
+    final authState = _ref.read(authStateProvider);
+
+    authState
+      ..isLoading = true
+      ..notifyListeners();
+
+    try {
+      await _authRepository.signOut();
+
+      // Clear local preferences
+      await _prefs.remove(_profileCompleteKey);
+
+      authState
+        ..isAuthenticated = false
+        ..isProfileComplete = false
+        ..user = null
+        ..isLoading = false
+        ..error = null
+        ..notifyListeners();
+    } catch (e) {
+      authState
+        ..isLoading = false
+        ..error = _getErrorMessage(e)
+        ..notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// Check if first time user
+  Future<bool> isFirstTimeUser() async {
+    return _prefs.getBool(_firstTimeKey) ?? true;
+  }
+
+  /// Mark user as not first time
+  Future<void> markNotFirstTimeUser() async {
+    await _prefs.setBool(_firstTimeKey, false);
+  }
+
+  /// Get error message from exception
+  String _getErrorMessage(dynamic error) {
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'user-not-found':
+          return 'No user found with this email.';
+        case 'wrong-password':
+          return 'Wrong password provided.';
+        case 'email-already-in-use':
+          return 'An account already exists with this email.';
+        case 'invalid-email':
+          return 'Invalid email address.';
+        case 'weak-password':
+          return 'Password should be at least 6 characters.';
+        case 'network-request-failed':
+          return 'Network error. Please check your connection.';
+        case 'too-many-requests':
+          return 'Too many attempts. Please try again later.';
+        default:
+          return 'An error occurred. Please try again.';
+      }
+    }
+    return error.toString();
+  }
+}
+
+// Temporary model classes until we create proper entities
+class AuthRepository {
+  Future<app_user.User> getCurrentUser() async {
+    throw UnimplementedError();
+  }
+
+  Future<app_user.User> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  Future<app_user.User> signUpWithEmail({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  Future<app_user.User> signInWithGoogle() async {
+    throw UnimplementedError();
+  }
+
+  Future<app_user.User> signInWithApple() async {
+    throw UnimplementedError();
+  }
+
+  Future<void> resetPassword(String email) async {
+    throw UnimplementedError();
+  }
+
+  Future<app_user.User> updateUserProfile({
+    String? name,
+    String? photoUrl,
+    String? skinType,
+    List<String>? skinConcerns,
+    int? ageRange,
+    String? gender,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  Future<void> signOut() async {
+    throw UnimplementedError();
+  }
+}
+
+class AuthRepositoryImpl implements AuthRepository {
+  @override
+  Future<app_user.User> getCurrentUser() async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<app_user.User> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<app_user.User> signUpWithEmail({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<app_user.User> signInWithGoogle() async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<app_user.User> signInWithApple() async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> resetPassword(String email) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<app_user.User> updateUserProfile({
+    String? name,
+    String? photoUrl,
+    String? skinType,
+    List<String>? skinConcerns,
+    int? ageRange,
+    String? gender,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> signOut() async {
+    throw UnimplementedError();
+  }
+}
