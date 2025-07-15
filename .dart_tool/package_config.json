@@ -758,6 +758,12 @@
       "languageVersion": "3.6"
     },
     {
+      "name": "nested",
+      "rootUri": "file:///C:/Users/emyma/AppData/Local/Pub/Cache/hosted/pub.dev/nested-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "nm",
       "rootUri": "file:///C:/Users/emyma/AppData/Local/Pub/Cache/hosted/pub.dev/nm-0.5.0",
       "packageUri": "lib/",
@@ -888,6 +894,12 @@
       "rootUri": "file:///C:/Users/emyma/AppData/Local/Pub/Cache/hosted/pub.dev/process-5.0.3",
       "packageUri": "lib/",
       "languageVersion": "3.3"
+    },
+    {
+      "name": "provider",
+      "rootUri": "file:///C:/Users/emyma/AppData/Local/Pub/Cache/hosted/pub.dev/provider-6.1.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "pub_semver",
@@ -1298,7 +1310,7 @@
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2025-07-13T13:36:49.022176Z",
+  "generated": "2025-07-15T10:46:58.307362Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
   "flutterRoot": "file:///C:/Users/emyma/AppData/Local/flutter",

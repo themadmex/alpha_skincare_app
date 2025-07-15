@@ -3,9 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../domain/entities/user.dart' as app_user;
-import '../../domain/repositories/auth_repository.dart';
-import '../../data/repositories/auth_repository_impl.dart';
 
 /// Authentication state that extends ChangeNotifier for navigation reactivity
 class AuthState extends ChangeNotifier {

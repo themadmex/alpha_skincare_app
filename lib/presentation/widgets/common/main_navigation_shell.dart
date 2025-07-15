@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_routes.dart';
-import '../../../core/theme/app_theme.dart';
 
 /// Main navigation shell with bottom navigation bar
 /// Provides consistent navigation experience across the app

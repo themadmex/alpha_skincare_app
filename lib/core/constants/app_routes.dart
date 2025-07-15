@@ -1,122 +1,107 @@
-/// Route constants for Alpha Skincare App
-/// Centralizes all route paths for easy maintenance and type safety
 class AppRoutes {
-  // Private constructor to prevent instantiation
   AppRoutes._();
 
-  // Initial route
+  // Root Routes
   static const String splash = '/';
-
-  // Authentication routes
-  static const String signIn = '/auth/sign-in';
-  static const String signUp = '/auth/sign-up';
-  static const String forgotPassword = '/auth/forgot-password';
-  static const String resetPassword = '/auth/reset-password';
-  static const String verifyEmail = '/auth/verify-email';
-
-  // Onboarding routes
   static const String onboarding = '/onboarding';
-  static const String profileSetup = '/onboarding/profile-setup';
+  static const String profileSetup = '/profile-setup';
 
-  // Main app routes (bottom navigation)
+  // Auth Routes
+  static const String signIn = '/sign-in';
+  static const String signUp = '/sign-up';
+  static const String forgotPassword = '/forgot-password';
+
+  // Main App Routes
   static const String home = '/home';
   static const String scan = '/scan';
-  static const String history = '/history';
-  static const String products = '/products';
+  static const String scanHistory = '/scan-history';
+  static const String scanResults = '/scan-results';
+  static const String camera = '/camera';
   static const String profile = '/profile';
+  static const String recommendations = '/recommendations';
+  static const String productDetails = '/product-details';
 
-  // Scan sub-routes
-  static const String scanResults = '/scan/results/:scanId';
-  static const String scanDetail = '/scan/detail/:scanId';
-  static const String scanCompare = '/scan/compare';
+  // Nested Routes (for navigation shell)
+  static const String homeTab = '/home-tab';
+  static const String scanTab = '/scan-tab';
+  static const String historyTab = '/history-tab';
+  static const String profileTab = '/profile-tab';
 
-  // Product sub-routes
-  static const String productDetail = '/products/:productId';
-  static const String productSearch = '/products/search';
-  static const String productCategories = '/products/categories';
-  static const String savedProducts = '/products/saved';
+  // Settings Routes
+  static const String settings = '/settings';
+  static const String notifications = '/notifications';
+  static const String privacy = '/privacy';
+  static const String support = '/support';
+  static const String about = '/about';
+  static const String termsOfService = '/terms-of-service';
+  static const String privacyPolicy = '/privacy-policy';
 
-  // Profile sub-routes
-  static const String editProfile = '/profile/edit';
-  static const String skinProfile = '/profile/skin';
-  static const String settings = '/profile/settings';
-  static const String notifications = '/profile/notifications';
-  static const String privacy = '/profile/privacy';
-  static const String help = '/profile/help';
-  static const String about = '/profile/about';
-  static const String premium = '/profile/premium';
+  // Route Parameters
+  static const String scanIdParam = 'scanId';
+  static const String productIdParam = 'productId';
+  static const String userIdParam = 'userId';
 
-  // Progress and analytics routes
-  static const String progress = '/progress';
-  static const String goals = '/progress/goals';
-  static const String insights = '/progress/insights';
+  // Route Patterns
+  static const String scanResultsPattern = '/scan-results/:$scanIdParam';
+  static const String productDetailsPattern = '/product-details/:$productIdParam';
 
-  // Educational content routes
-  static const String learn = '/learn';
-  static const String ingredients = '/learn/ingredients';
-  static const String routines = '/learn/routines';
-  static const String tips = '/learn/tips';
+  // Route Names (for analytics and navigation)
+  static const String splashName = 'splash';
+  static const String onboardingName = 'onboarding';
+  static const String profileSetupName = 'profile-setup';
+  static const String signInName = 'sign-in';
+  static const String signUpName = 'sign-up';
+  static const String forgotPasswordName = 'forgot-password';
+  static const String homeName = 'home';
+  static const String scanName = 'scan';
+  static const String scanHistoryName = 'scan-history';
+  static const String scanResultsName = 'scan-results';
+  static const String cameraName = 'camera';
+  static const String profileName = 'profile';
+  static const String recommendationsName = 'recommendations';
+  static const String productDetailsName = 'product-details';
+  static const String settingsName = 'settings';
+  static const String notificationsName = 'notifications';
+  static const String privacyName = 'privacy';
+  static const String supportName = 'support';
+  static const String aboutName = 'about';
+  static const String termsOfServiceName = 'terms-of-service';
+  static const String privacyPolicyName = 'privacy-policy';
 
-  // Helper methods for dynamic routes
-  static String scanResultsPath(String scanId) => '/scan/results/$scanId';
-  static String scanDetailPath(String scanId) => '/scan/detail/$scanId';
-  static String productDetailPath(String productId) => '/products/$productId';
+  // Tab Routes for Bottom Navigation
+  static const List<String> bottomNavRoutes = [
+    homeTab,
+    scanTab,
+    historyTab,
+    profileTab,
+  ];
 
-  // Bottom navigation indices
-  static const int homeTabIndex = 0;
-  static const int scanTabIndex = 1;
-  static const int historyTabIndex = 2;
-  static const int productsTabIndex = 3;
-  static const int profileTabIndex = 4;
+  // Auth Required Routes
+  static const List<String> authRequiredRoutes = [
+    home,
+    scan,
+    scanHistory,
+    scanResults,
+    camera,
+    profile,
+    recommendations,
+    productDetails,
+    settings,
+    notifications,
+    privacy,
+    support,
+    about,
+    termsOfService,
+    privacyPolicy,
+  ];
 
-  // Route groups for navigation guards
-  static const List<String> authRoutes = [
+  // Public Routes (no auth required)
+  static const List<String> publicRoutes = [
+    splash,
+    onboarding,
     signIn,
     signUp,
     forgotPassword,
-    resetPassword,
-    verifyEmail,
-  ];
-
-  static const List<String> onboardingRoutes = [
-    onboarding,
     profileSetup,
   ];
-
-  static const List<String> authenticatedRoutes = [
-    home,
-    scan,
-    history,
-    products,
-    profile,
-    progress,
-    learn,
-  ];
-
-  static const List<String> premiumRoutes = [
-    '/progress/advanced-analytics',
-    '/scan/unlimited',
-    '/products/exclusive',
-  ];
-
-  // Check if route requires authentication
-  static bool requiresAuth(String route) {
-    return authenticatedRoutes.any((r) => route.startsWith(r)) ||
-        premiumRoutes.any((r) => route.startsWith(r));
-  }
-
-  // Check if route is premium only
-  static bool isPremiumRoute(String route) {
-    return premiumRoutes.any((r) => route.startsWith(r));
-  }
-
-  // Check if route is part of onboarding flow
-  static bool isOnboardingRoute(String route) {
-    return onboardingRoutes.any((r) => route.startsWith(r));
-  }
-
-  // Check if route is auth related
-  static bool isAuthRoute(String route) {
-    return authRoutes.any((r) => route.startsWith(r));
-  }
 }

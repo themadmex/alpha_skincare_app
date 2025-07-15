@@ -25,6 +25,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  provider: ^6.0.5
   # State Management
   flutter_riverpod: ^2.4.9
   riverpod_annotation: ^2.3.3
