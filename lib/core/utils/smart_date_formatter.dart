@@ -1,3 +1,5 @@
+import 'dart:core';
+
 import 'package:intl/intl.dart';
 
 // Date format configuration
