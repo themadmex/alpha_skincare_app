@@ -1,6 +1,6 @@
 {
-    "name": "alpha_skin_care_app",
-    "short_name": "alpha_skin_care_app",
+    "name": "alpha_skincare",
+    "short_name": "alpha_skincare",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

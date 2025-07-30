@@ -1,113 +1,52 @@
-# Project identity
-name: alpha_skincare_app               # Your app's package name
-description: AI-powered skin analysis and personalized skincare recommendations app
-version: 1.0.0+1                       # Semantic version + build number
+name: alpha_skincare
+description: A new Flutter project.
+publish_to: none
+version: 1.0.0+1
 
-# Minimum SDK versions
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: '>=3.10.0'
+  sdk: ^3.6.0
 
-# Flutter-specific settings
-flutter:
-  uses-material-design: true           # Enables Material icons/fonts
-  assets:                              # List any asset directories/files here
-    - assets/images/
-    - assets/images/onboarding/
-    - assets/images/icons/
-    - assets/images/backgrounds/
-    - assets/ml_models/
-    - assets/data/
-    - .env
-
-# Third-party packages your app uses
 dependencies:
-  flutter:
-    sdk: flutter
-
-  provider: ^6.0.5
-  # State Management
-  flutter_riverpod: ^2.4.9
-  riverpod_annotation: ^2.3.3
-
-  # Navigation
-  go_router: ^12.1.3
-
-  # UI & Design
-  cupertino_icons: ^1.0.2
-  google_fonts: ^6.1.0
-
-  # Authentication & Security
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.15.3
-  google_sign_in: ^6.1.6
-  sign_in_with_apple: ^5.0.0
-  crypto: ^3.0.3
-  local_auth: ^2.1.7
-
-  # Camera & Image Processing
-  camera: ^0.10.5+5
-  image_picker: ^1.0.4
-  image: ^4.1.3
-  path_provider: ^2.1.1
-  permission_handler: ^11.1.0
-
-  # Machine Learning
-  tflite_flutter: ^0.9.0               # Downgraded to avoid conflicts
-  tflite_flutter_helper: ^0.2.1
-
-  # Database & Storage
-  sqflite: ^2.3.0
-  shared_preferences: ^2.2.2
-  hive: ^2.2.3
-  hive_flutter: ^1.1.0
-
-  # Network & API
-  http: ^1.1.0
-  dio: ^5.3.3
-  json_annotation: ^4.8.1
-  connectivity_plus: ^5.0.2
-
-  # Utilities
-  intl: ^0.18.1
-  uuid: ^4.2.1
-  flutter_dotenv: ^5.1.0
-  package_info_plus: ^4.2.0
-  device_info_plus: ^9.1.1
-
-  # Notifications
-  flutter_local_notifications: ^16.3.0
-  firebase_messaging: ^14.7.10
-
-  # Charts & Analytics
+  flutter:       # 🚨 CRITICAL: Required for every Flutter project - DO NOT REMOVE
+    sdk: flutter # 🚨 CRITICAL: Required for every Flutter project - DO NOT REMOVE
+  
+  # 🚨 CRITICAL: Core UI and responsive design - DO NOT REMOVE OR MODIFY
+  sizer: ^2.0.15              # Required for responsive design system
+  flutter_svg: ^2.0.9        # Required for SVG icon support
+  google_fonts: ^6.1.0       # Required for typography (replaces local fonts)
+  shared_preferences: ^2.2.2 # Required for local data storage
+  web: ^1.1.1
+  
+  # Feature dependencies - safe to modify
+  cached_network_image: ^3.3.1
+  connectivity_plus: ^6.1.4
+  dio: ^5.4.0
+  fluttertoast: ^8.2.4
   fl_chart: ^0.65.0
-  firebase_analytics: ^10.7.4
-  firebase_crashlytics: ^3.4.8
+  camera: ^0.10.5+5
+  permission_handler: ^11.1.0
+  
+  # Supabase integration
+  supabase_flutter: ^2.9.1
+  supabase: ^2.8.0
+  image_picker: ^1.1.2
+  record: ^6.0.0
 
-  # Social Sharing
-  share_plus: ^7.2.1
-  url_launcher: ^6.2.2
-
-# Packages used only during development
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  flutter_test:    # 🚨 CRITICAL: Required for Flutter project testing - DO NOT REMOVE
+    sdk: flutter   # 🚨 CRITICAL: Required for Flutter project testing - DO NOT REMOVE
+  flutter_lints: ^5.0.0 # 🚨 CRITICAL: Required for code quality - DO NOT REMOVE
 
-  # Code generation tools
-  build_runner: ^2.4.7
-  riverpod_generator: ^2.3.9
-  json_serializable: ^6.7.1
-  hive_generator: ^2.0.1
-
-  # Testing
-  mockito: ^5.4.2
-  integration_test:
-    sdk: flutter
-
-  # Linting
-  flutter_lints: ^3.0.0
-
-# Override versions when necessary
-dependency_overrides:
-  image: ^3.0.2
-  ffi: ^2.0.1     # <- enforce the newer ffi for everyone
+flutter:
+  uses-material-design: true # 🚨 CRITICAL: Required for Material icon font - DO NOT REMOVE
+  assets:
+    - assets/
+    - assets/images/
+  # 🚨 CRITICAL ASSET MANAGEMENT RULES:
+  # - DO NOT ADD NEW ASSET DIRECTORIES (assets/svg/, assets/icons/, etc.)
+  # - ONLY USE EXISTING AND ITEMS AVAILABLE IN THE DIRECTORIES LISTED ABOVE (assets/, assets/images/)
+  
+  # 🚨 CRITICAL FONTS RULE: 
+  # - THIS PROJECT USES GOOGLE FONTS INSTEAD OF LOCAL FONTS
+  # - DO NOT ADD ANY LOCAL FONTS SECTION OR FONT FILES TO ASSETS
+  # - ALL FONTS MUST USE google_fonts PACKAGE
